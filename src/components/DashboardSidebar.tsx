@@ -96,7 +96,7 @@ export function DashboardSidebar({ activeItem, onNavigate }: DashboardSidebarPro
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <BarChart3 className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="font-semibold">SocialFlow</span>
+          <span className="font-semibold">SOMI</span>
         </div>
       </div>
       
@@ -148,7 +148,7 @@ export function DashboardSidebar({ activeItem, onNavigate }: DashboardSidebarPro
         </div>
       </ScrollArea>
       
-      <div className="p-3">
+      <div className="p-6 border-t border-border">
         <Button variant="ghost" className="w-full justify-start">
           <Settings className="mr-2 h-4 w-4" />
           Settings
