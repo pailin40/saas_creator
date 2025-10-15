@@ -1,25 +1,32 @@
-import { MetricsCard } from '../MetricsCard';
-import { PlatformCard } from '../PlatformCard';
-import { AnalyticsChart } from '../AnalyticsChart';
-import { ActivityFeed } from '../ActivityFeed';
-import { ContentTable } from '../ContentTable';
-import { InsightPanel } from '../InsightPanel';
-import { 
-  platformMetrics, 
-  chartData, 
-  recentContent, 
-  recentActivity, 
-  overallMetrics
-} from '../../data/mockData';
-import { 
-  Users, 
-  Heart, 
-  Eye, 
-  TrendingUp,
-  Target
-} from 'lucide-react';
+import { MetricsCard } from "../MetricsCard";
+import { PlatformCard } from "../PlatformCard";
+import { AnalyticsChart } from "../AnalyticsChart";
+import { ActivityFeed } from "../ActivityFeed";
+import { ContentTable } from "../ContentTable";
+import { InsightPanel } from "../InsightPanel";
+import { useNavigate } from "react-router-dom";
+import {
+  platformMetrics,
+  chartData,
+  recentContent,
+  recentActivity,
+  overallMetrics,
+} from "../../data/mockData";
+import { Users, Heart, Eye, TrendingUp, Target, RefreshCw } from "lucide-react";
 
 export function OverviewPage() {
+  const navigate = useNavigate();
+
+  const handlePlatformDetails = (platformName: string) => {
+    // Convert platform name to lowercase for URL
+    navigate(`/${platformName.toLowerCase()}`);
+  };
+
+  const handleRefresh = () => {
+    // Refresh the page
+    window.location.reload();
+  };
+
   return (
     <div className="space-y-6">
       {/* Overview Metrics */}
@@ -29,8 +36,6 @@ export function OverviewPage() {
           value={overallMetrics.totalFollowers}
           change={8.2}
           icon={<Users className="h-4 w-4" />}
-          description="Across all platforms"
-          sparklineData={[120, 125, 130, 128, 135, 140, 138]}
           target={150000}
           status="good"
         />
@@ -39,18 +44,14 @@ export function OverviewPage() {
           value={overallMetrics.totalEngagement}
           change={15.1}
           icon={<Heart className="h-4 w-4" />}
-          description="This month"
-          sparklineData={[45, 52, 48, 55, 60, 58, 62]}
           target={75000}
           status="good"
         />
         <MetricsCard
           title="Total Reach"
-          value={`${(overallMetrics.totalReach / 1000).toFixed(0)}K`}
+          value={overallMetrics.totalReach}
           change={12.5}
           icon={<Eye className="h-4 w-4" />}
-          description="People reached"
-          sparklineData={[280, 290, 285, 300, 310, 305, 320]}
           target={400000}
           status="warning"
         />
@@ -59,8 +60,6 @@ export function OverviewPage() {
           value={`${overallMetrics.avgEngagementRate}%`}
           change={3.2}
           icon={<TrendingUp className="h-4 w-4" />}
-          description="Across platforms"
-          sparklineData={[4.5, 4.8, 4.6, 4.9, 5.1, 4.8, 5.2]}
           target={6}
           status="warning"
         />
@@ -68,15 +67,23 @@ export function OverviewPage() {
 
       {/* Platform Performance */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Platform Performance</h2>
+        <div className="flex items-center gap-4 mb-4">
+          <h2 className="text-lg font-semibold">Platform Performance</h2>
+          <button
+            onClick={handleRefresh}
+            className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Refresh data"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {platformMetrics.map((platform) => (
-            <PlatformCard 
-              key={platform.platform} 
+            <PlatformCard
+              key={platform.platform}
               platform={platform}
-              onViewDetails={(platform) => console.log('View details for', platform)}
-              onRefresh={(platform) => console.log('Refresh data for', platform)}
-              onDisconnect={(platform) => console.log('Disconnect', platform)}
+              onDetailsClick={() => handlePlatformDetails(platform.platform)}
+              onDisconnect={(platform) => console.log("Disconnect", platform)}
             />
           ))}
         </div>
@@ -114,7 +121,7 @@ export function OverviewPage() {
           />
         </div>
         <div className="lg:col-span-3">
-          <InsightPanel 
+          <InsightPanel
             currentFollowers={60234}
             growthThisPeriod={12450}
             growthPercentage={20.6}
@@ -123,10 +130,10 @@ export function OverviewPage() {
             goalTarget={75000}
             daysRemaining={28}
             topGrowingPlatform={{
-              name: 'TikTok',
-              growth: '+45%',
-              icon: <Target className="h-4 w-4" style={{ color: '#000000' }} />,
-              sparklineData: [15, 18, 22, 28, 35, 45, 52]
+              name: "TikTok",
+              growth: "+45%",
+              icon: <Target className="h-4 w-4" style={{ color: "#000000" }} />,
+              sparklineData: [15, 18, 22, 28, 35, 45, 52],
             }}
           />
         </div>
