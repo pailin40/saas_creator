@@ -67,13 +67,39 @@ import {
   UserPlus,
   RefreshCw
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const COLORS = ['#22c55e', '#16a34a', '#15803d', '#166534', '#14532d'];
+
+const chartConfig = {
+  engagement: {
+    label: "Engagement",
+    color: "#22c55e",
+  },
+  reach: {
+    label: "Reach", 
+    color: "#16a34a",
+  },
+  followers: {
+    label: "Followers",
+    color: "#15803d",
+  },
+  percentage: {
+    label: "Percentage",
+    color: "#22c55e",
+  },
+  avgEngagement: {
+    label: "Avg Engagement Rate %",
+    color: "#22c55e",
+  },
+};
 
 export function AnalyticsPage() {
+  const [engagementViewMode, setEngagementViewMode] = useState<'overall' | 'platform'>('overall');
+  const [reachViewMode, setReachViewMode] = useState<'overall' | 'platform'>('overall');
+  const [followersViewMode, setFollowersViewMode] = useState<'overall' | 'platform'>('overall');
   const [selectedPlatforms, setSelectedPlatforms] = useState(['instagram', 'youtube', 'tiktok', 'twitter']);
-  const [viewMode, setViewMode] = useState<'overall' | 'platform'>('overall');
   const [dateRange, setDateRange] = useState('90d');
   const [sortBy, setSortBy] = useState('engagement');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -104,80 +130,6 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1>Advanced Analytics</h1>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <span>Comprehensive performance insights across all platforms</span>
-            <Separator orientation="vertical" className="h-4" />
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span className="text-sm">Last updated: {lastUpdated}</span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-6 w-6 p-0"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search metrics..." 
-              className="pl-9 w-48"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          
-          {/* Date Range */}
-          <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-[140px]">
-              <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Last 7 Days</SelectItem>
-              <SelectItem value="30d">Last 30 Days</SelectItem>
-              <SelectItem value="90d">Last 90 Days</SelectItem>
-              <SelectItem value="1y">Last Year</SelectItem>
-              <SelectItem value="custom">Custom Range</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {/* Filters */}
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-          
-          {/* Export */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>Export as PDF</DropdownMenuItem>
-              <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-              <DropdownMenuItem>Export Charts as PNG</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Custom Report</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricsCard
@@ -225,7 +177,7 @@ export function AnalyticsPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>Engagement Over Time</CardTitle>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-sm text-green-600">
+              <div className="flex items-center gap-1 text-sm text-green-500">
                 <TrendingUp className="h-3 w-3" />
                 +246.8%
               </div>
@@ -233,8 +185,8 @@ export function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ChartControls
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
+              viewMode={engagementViewMode}
+              onViewModeChange={setEngagementViewMode}
               selectedPlatforms={selectedPlatforms}
               onPlatformToggle={(platform) => {
                 setSelectedPlatforms(prev => 
@@ -245,45 +197,51 @@ export function AnalyticsPage() {
               }}
               dateRange={dateRange}
               onDateRangeChange={setDateRange}
-              showPlatformToggles={viewMode === 'platform'}
+              showPlatformToggles={engagementViewMode === 'platform'}
             />
             
             <div className="mt-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value, name) => [value.toLocaleString(), name]}
-                    labelFormatter={(label) => `Date: ${label}`}
-                  />
-                  {viewMode === 'overall' ? (
-                    <Area 
-                      type="monotone" 
-                      dataKey="engagement" 
-                      stroke="hsl(var(--chart-1))" 
-                      fill="hsl(var(--chart-1))"
-                      fillOpacity={0.3}
+              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value) => `Date: ${value}`}
+                          formatter={(value, name) => [value.toLocaleString(), name]}
+                        />
+                      }
                     />
-                  ) : (
-                    <>
-                      {selectedPlatforms.includes('instagram') && (
-                        <Area type="monotone" dataKey="instagram_engagement" stroke="#E4405F" fill="#E4405F" fillOpacity={0.1} />
-                      )}
-                      {selectedPlatforms.includes('youtube') && (
-                        <Area type="monotone" dataKey="youtube_engagement" stroke="#FF0000" fill="#FF0000" fillOpacity={0.1} />
-                      )}
-                      {selectedPlatforms.includes('tiktok') && (
-                        <Area type="monotone" dataKey="tiktok_engagement" stroke="#000000" fill="#000000" fillOpacity={0.1} />
-                      )}
-                      {selectedPlatforms.includes('twitter') && (
-                        <Area type="monotone" dataKey="twitter_engagement" stroke="#1DA1F2" fill="#1DA1F2" fillOpacity={0.1} />
-                      )}
-                    </>
-                  )}
-                </AreaChart>
-              </ResponsiveContainer>
+                    {engagementViewMode === 'overall' ? (
+                      <Area 
+                        type="monotone" 
+                        dataKey="engagement" 
+                        stroke="#22c55e" 
+                        fill="#22c55e"
+                        fillOpacity={0.3}
+                      />
+                    ) : (
+                      <>
+                        {selectedPlatforms.includes('instagram') && (
+                          <Area type="monotone" dataKey="instagram_engagement" stroke="#E4405F" fill="#E4405F" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('youtube') && (
+                          <Area type="monotone" dataKey="youtube_engagement" stroke="#FF0000" fill="#FF0000" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('tiktok') && (
+                          <Area type="monotone" dataKey="tiktok_engagement" stroke="#000000" fill="#000000" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('twitter') && (
+                          <Area type="monotone" dataKey="twitter_engagement" stroke="#1DA1F2" fill="#1DA1F2" fillOpacity={0.1} />
+                        )}
+                      </>
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </CardContent>
         </Card>
@@ -293,7 +251,7 @@ export function AnalyticsPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>Reach Analysis</CardTitle>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-sm text-green-600">
+              <div className="flex items-center gap-1 text-sm text-green-500">
                 <TrendingUp className="h-3 w-3" />
                 +133
               </div>
@@ -301,8 +259,8 @@ export function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ChartControls
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
+              viewMode={reachViewMode}
+              onViewModeChange={setReachViewMode}
               selectedPlatforms={selectedPlatforms}
               onPlatformToggle={(platform) => {
                 setSelectedPlatforms(prev => 
@@ -313,45 +271,51 @@ export function AnalyticsPage() {
               }}
               dateRange={dateRange}
               onDateRangeChange={setDateRange}
-              showPlatformToggles={viewMode === 'platform'}
+              showPlatformToggles={reachViewMode === 'platform'}
             />
             
             <div className="mt-4">
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip 
-                    formatter={(value, name) => [value.toLocaleString(), name]}
-                    labelFormatter={(label) => `Date: ${label}`}
-                  />
-                  {viewMode === 'overall' ? (
-                    <Line 
-                      type="monotone" 
-                      dataKey="reach" 
-                      stroke="hsl(var(--chart-2))" 
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
+              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value) => `Date: ${value}`}
+                          formatter={(value, name) => [value.toLocaleString(), name]}
+                        />
+                      }
                     />
-                  ) : (
-                    <>
-                      {selectedPlatforms.includes('instagram') && (
-                        <Line type="monotone" dataKey="instagram_reach" stroke="#E4405F" strokeWidth={2} dot={{ r: 3 }} />
-                      )}
-                      {selectedPlatforms.includes('youtube') && (
-                        <Line type="monotone" dataKey="youtube_reach" stroke="#FF0000" strokeWidth={2} dot={{ r: 3 }} />
-                      )}
-                      {selectedPlatforms.includes('tiktok') && (
-                        <Line type="monotone" dataKey="tiktok_reach" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
-                      )}
-                      {selectedPlatforms.includes('twitter') && (
-                        <Line type="monotone" dataKey="twitter_reach" stroke="#1DA1F2" strokeWidth={2} dot={{ r: 3 }} />
-                      )}
-                    </>
-                  )}
-                </LineChart>
-              </ResponsiveContainer>
+                    {reachViewMode === 'overall' ? (
+                      <Line 
+                        type="monotone" 
+                        dataKey="reach" 
+                        stroke="#16a34a" 
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                      />
+                    ) : (
+                      <>
+                        {selectedPlatforms.includes('instagram') && (
+                          <Line type="monotone" dataKey="instagram_reach" stroke="#E4405F" strokeWidth={2} dot={{ r: 3 }} />
+                        )}
+                        {selectedPlatforms.includes('youtube') && (
+                          <Line type="monotone" dataKey="youtube_reach" stroke="#FF0000" strokeWidth={2} dot={{ r: 3 }} />
+                        )}
+                        {selectedPlatforms.includes('tiktok') && (
+                          <Line type="monotone" dataKey="tiktok_reach" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
+                        )}
+                        {selectedPlatforms.includes('twitter') && (
+                          <Line type="monotone" dataKey="twitter_reach" stroke="#1DA1F2" strokeWidth={2} dot={{ r: 3 }} />
+                        )}
+                      </>
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </CardContent>
         </Card>
@@ -362,7 +326,7 @@ export function AnalyticsPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Follower Growth Trends</CardTitle>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-sm text-green-600">
+            <div className="flex items-center gap-1 text-sm text-green-500">
               <TrendingUp className="h-3 w-3" />
               +84.4%
             </div>
@@ -370,8 +334,8 @@ export function AnalyticsPage() {
         </CardHeader>
         <CardContent>
           <ChartControls
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
+            viewMode={followersViewMode}
+            onViewModeChange={setFollowersViewMode}
             selectedPlatforms={selectedPlatforms}
             onPlatformToggle={(platform) => {
               setSelectedPlatforms(prev => 
@@ -382,55 +346,61 @@ export function AnalyticsPage() {
             }}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
-            showPlatformToggles={viewMode === 'platform'}
+            showPlatformToggles={followersViewMode === 'platform'}
           />
           
-          <div className="mt-4">
-            <ResponsiveContainer width="100%" height={400}>
-              <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [value.toLocaleString(), name]}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                {/* Target line */}
-                <Line 
-                  type="monotone" 
-                  dataKey={() => 75000} 
-                  stroke="#888" 
-                  strokeDasharray="5 5" 
-                  dot={false}
-                  strokeWidth={1}
-                />
-                {viewMode === 'overall' ? (
-                  <Area 
-                    type="monotone" 
-                    dataKey="followers" 
-                    stroke="hsl(var(--chart-3))" 
-                    fill="hsl(var(--chart-3))"
-                    fillOpacity={0.3}
-                  />
-                ) : (
-                  <>
-                    {selectedPlatforms.includes('instagram') && (
-                      <Line type="monotone" dataKey="instagram_followers" stroke="#E4405F" strokeWidth={2} dot={{ r: 3 }} />
+            <div className="mt-4">
+              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          labelFormatter={(value) => `Date: ${value}`}
+                          formatter={(value, name) => [value.toLocaleString(), name]}
+                        />
+                      }
+                    />
+                    {/* Target line */}
+                    <Line 
+                      type="monotone" 
+                      dataKey={() => 75000} 
+                      stroke="#888" 
+                      strokeDasharray="5 5" 
+                      dot={false}
+                      strokeWidth={1}
+                    />
+                    {followersViewMode === 'overall' ? (
+                      <Area 
+                        type="monotone" 
+                        dataKey="followers" 
+                        stroke="#22c55e" 
+                        fill="#22c55e"
+                        fillOpacity={0.3}
+                      />
+                    ) : (
+                      <>
+                        {selectedPlatforms.includes('instagram') && (
+                          <Area type="monotone" dataKey="instagram_followers" stroke="#E4405F" fill="#E4405F" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('youtube') && (
+                          <Area type="monotone" dataKey="youtube_followers" stroke="#FF0000" fill="#FF0000" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('tiktok') && (
+                          <Area type="monotone" dataKey="tiktok_followers" stroke="#000000" fill="#000000" fillOpacity={0.1} />
+                        )}
+                        {selectedPlatforms.includes('twitter') && (
+                          <Area type="monotone" dataKey="twitter_followers" stroke="#1DA1F2" fill="#1DA1F2" fillOpacity={0.1} />
+                        )}
+                      </>
                     )}
-                    {selectedPlatforms.includes('youtube') && (
-                      <Line type="monotone" dataKey="youtube_followers" stroke="#FF0000" strokeWidth={2} dot={{ r: 3 }} />
-                    )}
-                    {selectedPlatforms.includes('tiktok') && (
-                      <Line type="monotone" dataKey="tiktok_followers" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
-                    )}
-                    {selectedPlatforms.includes('twitter') && (
-                      <Line type="monotone" dataKey="twitter_followers" stroke="#1DA1F2" strokeWidth={2} dot={{ r: 3 }} />
-                    )}
-                  </>
-                )}
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
         </CardContent>
       </Card>
 
@@ -438,17 +408,6 @@ export function AnalyticsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Platform Performance</CardTitle>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="engagement">Engagement Rate</SelectItem>
-              <SelectItem value="followers">Followers</SelectItem>
-              <SelectItem value="reach">Reach</SelectItem>
-              <SelectItem value="change">Growth</SelectItem>
-            </SelectContent>
-          </Select>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -484,13 +443,13 @@ export function AnalyticsPage() {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Engagement Rate</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold">{platform.engagement}%</span>
+                          <span className="font-semibold text-sm">{platform.engagement}%</span>
                           <Badge 
-                            variant={platform.change > 0 ? "default" : "destructive"}
-                            className="text-xs"
+                            variant="secondary"
+                            className={`text-xs ${platform.change > 0 ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
                           >
                             {platform.change > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                            {Math.abs(platform.change)}%
+                            {platform.change > 0 ? "+" : ""}{platform.change}%
                           </Badge>
                         </div>
                       </div>
@@ -541,37 +500,37 @@ export function AnalyticsPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('metric')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('metric')} className="hover:bg-transparent">
                           Metric
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </th>
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('instagram')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('instagram')} className="hover:bg-transparent">
                           Instagram
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </th>
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('youtube')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('youtube')} className="hover:bg-transparent">
                           YouTube
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </th>
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('tiktok')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('tiktok')} className="hover:bg-transparent">
                           TikTok
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </th>
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('twitter')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('twitter')} className="hover:bg-transparent">
                           Twitter
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
                       </th>
                       <th className="text-left p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('total')}>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('total')} className="hover:bg-transparent">
                           Total
                           <ArrowUpDown className="ml-2 h-4 w-4" />
                         </Button>
@@ -627,15 +586,23 @@ export function AnalyticsPage() {
                 <CardTitle>Age Distribution</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={audienceDemographics.ageGroups} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="range" type="category" />
-                    <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-                    <Bar dataKey="percentage" fill="hsl(var(--chart-1))" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={audienceDemographics.ageGroups} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="range" type="category" />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value) => [`${value}%`, 'Percentage']}
+                          />
+                        }
+                      />
+                      <Bar dataKey="percentage" fill="#22c55e" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -687,7 +654,7 @@ export function AnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <ChartTooltip />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -699,21 +666,29 @@ export function AnalyticsPage() {
                 <CardTitle>Peak Activity Times</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={audienceDemographics.activeHours}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="hour" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value}%`, 'Activity']} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="percentage" 
-                      stroke="hsl(var(--chart-3))" 
-                      fill="hsl(var(--chart-3))"
-                      fillOpacity={0.6}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={audienceDemographics.activeHours}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="hour" />
+                      <YAxis />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value) => [`${value}%`, 'Activity']}
+                          />
+                        }
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="percentage" 
+                        stroke="#16a34a" 
+                        fill="#16a34a"
+                        fillOpacity={0.6}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
@@ -728,15 +703,17 @@ export function AnalyticsPage() {
                 <CardTitle>Content Type Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={contentTypePerformance}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="type" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="avgEngagement" fill="hsl(var(--chart-1))" name="Avg Engagement Rate %" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={contentTypePerformance}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="type" />
+                      <YAxis />
+                      <ChartTooltip />
+                      <Bar dataKey="avgEngagement" fill="#22c55e" name="Avg Engagement Rate %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -911,21 +888,29 @@ export function AnalyticsPage() {
                 <CardTitle>Video Retention Curve</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={videoAnalytics.retention}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="second" label={{ value: 'Seconds', position: 'insideBottom', offset: -5 }} />
-                    <YAxis label={{ value: '% Retention', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip formatter={(value) => [`${value}%`, 'Retention']} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="percentage" 
-                      stroke="hsl(var(--chart-4))" 
-                      fill="hsl(var(--chart-4))"
-                      fillOpacity={0.6}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={videoAnalytics.retention}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="second" label={{ value: 'Seconds', position: 'insideBottom', offset: -5 }} />
+                      <YAxis label={{ value: '% Retention', angle: -90, position: 'insideLeft' }} />
+                      <ChartTooltip
+                        content={
+                          <ChartTooltipContent
+                            formatter={(value) => [`${value}%`, 'Retention']}
+                          />
+                        }
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="percentage" 
+                        stroke="#15803d" 
+                        fill="#15803d"
+                        fillOpacity={0.6}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
@@ -953,7 +938,7 @@ export function AnalyticsPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <ChartTooltip />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>

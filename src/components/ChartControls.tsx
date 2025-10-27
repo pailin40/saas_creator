@@ -71,24 +71,59 @@ export function ChartControls({
       <div className="flex items-center gap-4">
         <Label className="text-sm text-muted-foreground">View:</Label>
         <div className="flex gap-4">
-          <Button
-            variant={viewMode === "overall" ? "default" : "ghost"}
-            size="sm"
+          {/* Overall Button */}
+          <button
             onClick={() => onViewModeChange("overall")}
-            className="flex items-center gap-2 h-8"
+            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-foreground cursor-pointer"
           >
-            <Circle className="h-3 w-3" />
-            Overall
-          </Button>
-          <Button
-            variant={viewMode === "platform" ? "default" : "ghost"}
-            size="sm"
+            {viewMode === "overall" ? (
+              <svg
+                className="h-5 w-5 text-black"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <circle cx="12" cy="12" r="10" />
+              </svg>
+            ) : (
+              <Circle className="h-5 w-5 text-muted-foreground" />
+            )}
+            <span
+              className={
+                viewMode === "overall"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              }
+            >
+              Overall
+            </span>
+          </button>
+
+          {/* By Platform Button */}
+          <button
             onClick={() => onViewModeChange("platform")}
-            className="flex items-center gap-2 h-8"
+            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-foreground cursor-pointer"
           >
-            <Circle className="h-3 w-3" />
-            By Platform
-          </Button>
+            {viewMode === "platform" ? (
+              <svg
+                className="h-5 w-5 text-black"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <circle cx="12" cy="12" r="10" />
+              </svg>
+            ) : (
+              <Circle className="h-5 w-5 text-muted-foreground" />
+            )}
+            <span
+              className={
+                viewMode === "platform"
+                  ? "text-foreground"
+                  : "text-muted-foreground"
+              }
+            >
+              By Platform
+            </span>
+          </button>
         </div>
       </div>
 

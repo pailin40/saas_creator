@@ -26,8 +26,6 @@ import {
   Settings,
   LogOut,
   User,
-  Moon,
-  Sun,
   Search,
   Download,
   CalendarIcon,
@@ -50,16 +48,10 @@ export function DashboardHeader({
   onExport,
   onPlatformFilter,
 }: DashboardHeaderProps = {}) {
-  const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [timeRange, setTimeRange] = useState("7d");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["all"]);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
-  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -250,15 +242,6 @@ export function DashboardHeader({
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export
-          </Button>
-
-          {/* Theme Toggle */}
-          <Button variant="ghost" size="sm" onClick={toggleTheme}>
-            {isDark ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
           </Button>
 
           {/* User Profile */}

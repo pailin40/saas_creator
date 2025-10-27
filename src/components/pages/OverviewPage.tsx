@@ -4,6 +4,7 @@ import { AnalyticsChart } from "../AnalyticsChart";
 import { ActivityFeed } from "../ActivityFeed";
 import { ContentTable } from "../ContentTable";
 import { InsightPanel } from "../InsightPanel";
+import { MilestoneTracker } from "../MilestoneTracker";
 import { useNavigate } from "react-router-dom";
 import {
   platformMetrics,
@@ -109,7 +110,8 @@ export function OverviewPage() {
 
       {/* Follower Growth Chart with Insights - 70/30 Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 space-y-6">
+          {/* Follower Growth Chart */}
           <AnalyticsChart
             data={chartData}
             title="Follower Growth"
@@ -119,7 +121,16 @@ export function OverviewPage() {
             target={75000}
             showLegend={false}
           />
+
+          {/* Milestone Tracker - Under Chart */}
+          <MilestoneTracker
+            currentFollowers={60234}
+            goalTarget={75000}
+            daysRemaining={28}
+            projectedFollowers={64380}
+          />
         </div>
+
         <div className="lg:col-span-3">
           <InsightPanel
             currentFollowers={60234}

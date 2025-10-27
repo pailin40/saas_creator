@@ -123,6 +123,14 @@ export function AnalyticsChart({
       : 0;
   const isPositiveTrend = trend > 0;
 
+  // Dynamic color based on trend for overall mode
+  const dynamicColor =
+    viewMode === "overall"
+      ? isPositiveTrend
+        ? "#22c55e" // Green for positive trend
+        : "#ef4444" // Red for negative trend
+      : color;
+
   return (
     <Card>
       <CardHeader>
@@ -229,8 +237,8 @@ export function AnalyticsChart({
                   <Area
                     type="monotone"
                     dataKey={dataKey}
-                    stroke={color}
-                    fill={color}
+                    stroke={dynamicColor}
+                    fill={dynamicColor}
                     fillOpacity={0.2}
                     strokeWidth={2}
                     name={
@@ -305,9 +313,9 @@ export function AnalyticsChart({
                   <Line
                     type="monotone"
                     dataKey={dataKey}
-                    stroke={color}
+                    stroke={dynamicColor}
                     strokeWidth={2}
-                    dot={{ fill: color, strokeWidth: 2, r: 4 }}
+                    dot={{ fill: dynamicColor, strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6 }}
                     name={
                       chartConfig[dataKey as keyof typeof chartConfig]?.label ||
